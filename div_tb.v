@@ -2,9 +2,9 @@
 
 module div_tb;
    
-   parameter N = 8;
+   parameter N = 32; //data width
 
-   parameter M = 100;
+   parameter M = 100; //test size
    
 
    parameter clk_period =20;
@@ -17,8 +17,8 @@ module div_tb;
    wire [N-1:0] quotient;
    wire [N-1:0] remainder;
 
-   reg [N-1:0] q;
-   reg [N-1:0] r;
+   wire [N-1:0] q;
+   wire [N-1:0] r;
 
    reg [N-1:0] dividend_in [0:M-1];
    reg [N-1:0] divisor_in [0:M-1];
@@ -48,8 +48,8 @@ module div_tb;
 
       //generate test data
       for (i=0; i<M; i=i+1) begin
-	 dividend_in[i] = $random(i)%(2**N);
-	 divisor_in[i] = $random(i)%(2**N);
+	 dividend_in[i] = $random%(2**N);
+	 divisor_in[i] = $random%(2**N);
 	 quotient_out[i] = dividend_in[i] / divisor_in[i];
 	 remainder_out[i] = dividend_in[i] % divisor_in[i];
       end
@@ -72,15 +72,23 @@ module div_tb;
    
    always @ (posedge clk) begin
       j <= j+1;
-      
-      q <= quotient;
-      r <= remainder;
-      
    end
-   
+
+   //assign inputs
    assign dividend = dividend_in[j];
    assign divisor = divisor_in[j];
-      
+
+   //show expected results
+   assign q = quotient_out[j];
+   assign r = remainder_out[j];
+       
+   always @ (negedge clk) begin
+      if(j >=N && (quotient != quotient_out[j-N] || remainder != remainder_out[j-N])) begin
+	 $display("Test failed at %d", $time);
+	 $finish;	 
+      end
+   end
+
 
 endmodule // div_tb
 
