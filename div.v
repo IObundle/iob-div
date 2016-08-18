@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module div (
+module div #( parameter N = 32 )(
 		  input 	 clk,
 		  
 		  input [N-1:0]  dividend,
@@ -10,8 +10,6 @@ module div (
 		  output [N-1:0] remainder
 		  );
 
-   parameter N = 8; //data width 
-   
    wire [(N+1)*N-1:0]		    dividend_int;
    wire [(N+1)*N-1:0]		    divisor_int;
    wire [(N+1)*N-1:0]		    quotient_int;

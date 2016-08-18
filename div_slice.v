@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module div_slice (
+module div_slice #( parameter N = 32, parameter S = 1) (
 		  input 	     clk,
 		  
 		  input [N-1:0]      dividend_i,
@@ -11,9 +11,6 @@ module div_slice (
 		  output reg [N-1:0] divisor_o,
 		  output reg [N-1:0] quotient_o
 		  );
-
-   parameter N = 8; //data width 
-   parameter S = 1; //pipeline stage
    
    wire 			    sub_sign;
    wire [2*N-S:0] 		    sub_res;
