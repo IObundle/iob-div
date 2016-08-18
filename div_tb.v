@@ -3,31 +3,26 @@
 module div_tb;
    
    parameter N = 8;
+
    parameter clk_period =20;
    
    
    reg clk;
    
-   reg [N-1:0] dividend_i;  
-   reg [2*N-2:0] divisor_i;
-   reg [N-1:0] 	 quotient_i;
+   reg [N-1:0] dividend;  
+   reg [N-1:0] divisor;
+   wire [N-1:0] quotient;
+   wire [N-1:0] remainder;
    
+   div #(.N(N)) uut (
+		     .clk(clk),
+		     
+		     .dividend(dividend),
+		     .divisor(divisor),
 
-   wire [N-1:0] dividend_o;
-   wire [2*N-2:0] divisor_o;
-   wire [N-1:0]   quotient_o;
-   
-   div_slice #(.N(N)) uut (
-		      .clk(clk),
-		       
-		      .dividend_i(dividend_i),
-		      .divisor_i(divisor_i),
-		      .quotient_i(quotient_i),
-
-		      .dividend_o(dividend_o),
-		      .divisor_o(divisor_o),
-		      .quotient_o(quotient_o)
-		      );
+		     .quotient(quotient),
+		     .remainder(remainder)
+		     );
    
 
    initial begin
@@ -36,11 +31,10 @@ module div_tb;
 
       clk = 0;
 
-      divisor_i = 3 << (N-1);
-      dividend_i = 10;
-      quotient_i = 0;
+      dividend = 10;
+      divisor = 3;
       
-      #(3*clk_period) $finish;
+      #(40*clk_period) $finish;
       
    end
 
