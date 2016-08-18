@@ -18,6 +18,7 @@ module div (
 
    assign dividend_int[N-1: 0] = dividend;
    assign divisor_int[N-1: 0] = divisor;
+   assign quotient_int[N-1: 0] = {N{1'b0}};
 
    genvar 			    k;
    generate
