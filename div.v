@@ -1,45 +1,50 @@
 `timescale 1ns / 1ps
 
-module div #( parameter N = 32 )(
-		  input 	 clk,
-		  
-		  input [N-1:0]  dividend,
-		  input [N-1:0]  divisor,
+module div # (
+              parameter DATA_W = 32,
+              parameter OPERS_PER_STAGE = 8
+              )
+   (
+	input               clk,
 
-		  output [N-1:0] quotient,
-		  output [N-1:0] remainder
-		  );
+	input [DATA_W-1:0]  dividend,
+	input [DATA_W-1:0]  divisor,
 
-   wire [(N+1)*N-1:0]		    dividend_int;
-   wire [(N+1)*N-1:0]		    divisor_int;
-   wire [(N+1)*N-1:0]		    quotient_int;
+	output [DATA_W-1:0] quotient,
+	output [DATA_W-1:0] remainder
+	);
 
-   assign dividend_int[N-1: 0] = dividend;
-   assign divisor_int[N-1: 0] = divisor;
-   assign quotient_int[N-1: 0] = {N{1'b0}};
+   wire [(DATA_W+1)*DATA_W-1:0] dividend_int;
+   wire [(DATA_W+1)*DATA_W-1:0] divisor_int;
+   wire [(DATA_W+1)*DATA_W-1:0] quotient_int;
 
-   genvar 			    k;
+   assign dividend_int[DATA_W-1:0] = dividend;
+   assign divisor_int[DATA_W-1:0]  = divisor;
+   assign quotient_int[DATA_W-1:0] = {DATA_W{1'b0}};
+
+   genvar                       k;
    generate
-      for(k=1; k<=N; k=k+1) begin : div_slice_array_el
-	 div_slice #(.N(N), .S(k)) uut (
-					.clk(clk),
-		       
-					.dividend_i(dividend_int[k*N-1-:N]),
-					.divisor_i(divisor_int[k*N-1-:N]),
-					.quotient_i(quotient_int[k*N-1-:N]),
+      for(k=1; k <= DATA_W; k=k+1) begin : div_slice_array_el
+	     div_slice # (
+                      .DATA_W(DATA_W),
+                      .STAGE(k),
+                      .OUTPUT_REG(!(k%OPERS_PER_STAGE))
+                      )
+         uut (
+			  .clk(clk),
 
-					.dividend_o(dividend_int[(k+1)*N-1-:N]),
-					.divisor_o(divisor_int[(k+1)*N-1-:N]),
-					.quotient_o(quotient_int[(k+1)*N-1-:N])
-					);
- 
+			  .dividend_i(dividend_int[k*DATA_W-1-:DATA_W]),
+			  .divisor_i(divisor_int[k*DATA_W-1-:DATA_W]),
+			  .quotient_i(quotient_int[k*DATA_W-1-:DATA_W]),
+
+			  .dividend_o(dividend_int[(k+1)*DATA_W-1-:DATA_W]),
+			  .divisor_o(divisor_int[(k+1)*DATA_W-1-:DATA_W]),
+			  .quotient_o(quotient_int[(k+1)*DATA_W-1-:DATA_W])
+			  );
       end
    endgenerate
-   
-   assign quotient = quotient_int[(N+1)*N-1-:N];
-   assign remainder = dividend_int[(N+1)*N-1-:N];
-   
-  
-endmodule // div_slice
 
-     
+   assign quotient = quotient_int[(DATA_W+1)*DATA_W-1-:DATA_W];
+   assign remainder = dividend_int[(DATA_W+1)*DATA_W-1-:DATA_W];
+
+endmodule

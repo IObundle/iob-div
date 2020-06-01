@@ -1,30 +1,42 @@
 `timescale 1ns / 1ps
 
-module div_slice #( parameter N = 32, parameter S = 1) (
-		  input 	     clk,
-		  
-		  input [N-1:0]      dividend_i,
-		  input [N-1:0]      divisor_i,
-		  input [N-1:0]      quotient_i,
+module div_slice # (
+                    parameter DATA_W = 32,
+                    parameter STAGE = 1,
+                    parameter OUTPUT_REG = 1
+                    )
+   (
+	input                   clk,
 
-		  output reg [N-1:0] dividend_o,
-		  output reg [N-1:0] divisor_o,
-		  output reg [N-1:0] quotient_o
-		  );
-   
-   wire 			    sub_sign;
-   wire [2*N-S:0] 		    sub_res;
+	input [DATA_W-1:0]      dividend_i,
+	input [DATA_W-1:0]      divisor_i,
+	input [DATA_W-1:0]      quotient_i,
 
-   assign sub_res = {{N{1'b0}},dividend_i} - {{S{1'b0}},divisor_i,{(N-S){1'b0}}};
-   assign sub_sign = sub_res[2*N-S];
+	output reg [DATA_W-1:0] dividend_o,
+	output reg [DATA_W-1:0] divisor_o,
+	output reg [DATA_W-1:0] quotient_o
+	);
 
-   always @ (posedge clk) begin
-      dividend_o <= (sub_sign == 1)? dividend_i: sub_res[N-1:0];
-      quotient_o <= quotient_i << 1 | {{(N-1){1'b0}},~sub_sign};
-      divisor_o <= divisor_i;   
-   end
+   wire                     sub_sign;
+   wire [2*DATA_W-STAGE:0]  sub_res;
 
-  
-endmodule // div_slice
+   assign sub_res  = {{DATA_W{1'b0}}, dividend_i} - {{STAGE{1'b0}}, divisor_i, {(DATA_W-STAGE){1'b0}}};
+   assign sub_sign = sub_res[2*DATA_W-STAGE];
 
-     
+   generate
+      if (OUTPUT_REG) begin
+         always @ (posedge clk) begin
+            dividend_o <= (sub_sign)? dividend_i: sub_res[DATA_W-1:0];
+            quotient_o <= quotient_i << 1 | {{(DATA_W-1){1'b0}}, ~sub_sign};
+            divisor_o  <= divisor_i;
+         end
+      end else begin
+         always @ * begin
+            dividend_o = (sub_sign)? dividend_i: sub_res[DATA_W-1:0];
+            quotient_o = quotient_i << 1 | {{(DATA_W-1){1'b0}}, ~sub_sign};
+            divisor_o  = divisor_i;
+         end
+      end
+   endgenerate
+
+endmodule

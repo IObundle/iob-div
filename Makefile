@@ -1,12 +1,12 @@
 SRC = div_slice.v div.v div_tb.v
 
-all : pipediv
+all: pipediv
 	./pipediv
 
-pipediv : $(SRC)
+pipediv: $(SRC)
 	iverilog -W all -o pipediv $(SRC)
 
 clean: 
-	rm pipediv *~ *.vcd
+	rm -f pipediv *~ *.vcd
 
-.PHONY: clean
+.PHONY: all clean
