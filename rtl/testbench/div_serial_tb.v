@@ -1,12 +1,19 @@
 `timescale 1ns / 1ps
 
-module div_tb;
+module div_serial_tb;
+
+   parameter clk_frequency = `CLK_FREQ;
+   parameter clk_period = 1e9/clk_frequency; //ns
 
    parameter DATA_W = 32;
+
    parameter TEST_SZ = 100;
-   parameter clk_period =20;
 
    reg clk;
+   reg rst;
+
+   reg start;
+   wire done;
 
    wire [DATA_W-1:0] dividend;
    wire [DATA_W-1:0] divisor;
@@ -23,12 +30,15 @@ module div_tb;
 
    integer           i, j;
 
-   div # (
-          .DATA_W(DATA_W),
-          .OPERS_PER_STAGE(8)
-          )
+   div_serial # (
+                 .DATA_W(DATA_W)
+                 )
    uut (
 		.clk(clk),
+        .rst(rst),
+
+        .start(start),
+        .done(done),
 
 		.dividend(dividend),
 		.divisor(divisor),
@@ -38,22 +48,34 @@ module div_tb;
 		);
 
    initial begin
-      $dumpfile("div.vcd");
-      $dumpvars();  
 
-      j=0;
+`ifdef VCD
+      $dumpfile("div_serial.vcd");
+      $dumpvars();
+`endif
+
+      // Global reset of FPGA
+      #100;
+
+      clk = 1;
+      rst = 0;
 
       // generate test data
       for (i=0; i < TEST_SZ; i=i+1) begin
-	     dividend_in[i] = $random%(2**DATA_W);
-	     divisor_in[i] = $random%(2**DATA_W);
+	     dividend_in[i] = $random%(2**(DATA_W-1));
+	     divisor_in[i] = $random%(2**(DATA_W-1));
 	     quotient_out[i] = dividend_in[i] / divisor_in[i];
 	     remainder_out[i] = dividend_in[i] % divisor_in[i];
       end
 
-      clk = 0;
+      // Global reset
+      #(clk_period+1);
+      rst = 1;
 
-      #(TEST_SZ*clk_period)
+      #clk_period;
+      rst = 0;
+
+      #(TEST_SZ*(DATA_W+2)*clk_period);
 
       $display("Test completed successfully");
       $finish;
@@ -63,7 +85,21 @@ module div_tb;
      #(clk_period/2) clk = ~clk;   
 
    always @ (posedge clk) begin
-      j <= j+1;
+      if (rst) begin
+         start <= 0;
+      end else if (done & ~start) begin
+         start <= 1;
+      end else begin
+         start <= 0;
+      end
+   end
+
+   always @ (posedge clk) begin
+      if (rst) begin
+         j <= 0;
+      end else if (start) begin
+         j <= j+1;
+      end
    end
 
    // assign inputs
@@ -74,9 +110,9 @@ module div_tb;
    assign q = quotient_out[j];
    assign r = remainder_out[j];
 
-   always @ (negedge clk) begin
-      if(j >= DATA_W && (quotient != quotient_out[j-DATA_W] ||
-                         remainder != remainder_out[j-DATA_W])) begin
+   always @ (posedge clk) begin
+      if(done && ~start && j > 0 && (quotient != quotient_out[j-1] ||
+                                     remainder != remainder_out[j-1])) begin
 	     $display("Test failed at %d", $time);
 	     $finish;
       end

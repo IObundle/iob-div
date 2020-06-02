@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
-module div # (
-              parameter DATA_W = 32,
-              parameter OPERS_PER_STAGE = 8
-              )
+module div_pipe # (
+                   parameter DATA_W = 32,
+                   parameter OPERS_PER_STAGE = 8
+                   )
    (
 	input               clk,
 
@@ -33,18 +33,18 @@ module div # (
          uut (
 			  .clk(clk),
 
-			  .dividend_i(dividend_int[k*DATA_W-1-:DATA_W]),
-			  .divisor_i(divisor_int[k*DATA_W-1-:DATA_W]),
-			  .quotient_i(quotient_int[k*DATA_W-1-:DATA_W]),
+			  .dividend_i(dividend_int[k*DATA_W-1 -: DATA_W]),
+			  .divisor_i(divisor_int[k*DATA_W-1 -: DATA_W]),
+			  .quotient_i(quotient_int[k*DATA_W-1 -: DATA_W]),
 
-			  .dividend_o(dividend_int[(k+1)*DATA_W-1-:DATA_W]),
-			  .divisor_o(divisor_int[(k+1)*DATA_W-1-:DATA_W]),
-			  .quotient_o(quotient_int[(k+1)*DATA_W-1-:DATA_W])
+			  .dividend_o(dividend_int[(k+1)*DATA_W-1 -: DATA_W]),
+			  .divisor_o(divisor_int[(k+1)*DATA_W-1 -: DATA_W]),
+			  .quotient_o(quotient_int[(k+1)*DATA_W-1 -: DATA_W])
 			  );
       end
    endgenerate
 
-   assign quotient = quotient_int[(DATA_W+1)*DATA_W-1-:DATA_W];
-   assign remainder = dividend_int[(DATA_W+1)*DATA_W-1-:DATA_W];
+   assign quotient  = quotient_int[(DATA_W+1)*DATA_W-1 -: DATA_W];
+   assign remainder = dividend_int[(DATA_W+1)*DATA_W-1 -: DATA_W];
 
 endmodule
