@@ -1,12 +1,9 @@
-SRC = div_slice.v div.v div_tb.v
+SIM_DIR := simulation/icarus
 
-all: pipediv
-	./pipediv
+sim:
+	make -C $(SIM_DIR)
 
-pipediv: $(SRC)
-	iverilog -W all -o pipediv $(SRC)
+clean:
+	make -C $(SIM_DIR) clean
 
-clean: 
-	rm -f pipediv *~ *.vcd
-
-.PHONY: all clean
+.PHONY: sim clean
