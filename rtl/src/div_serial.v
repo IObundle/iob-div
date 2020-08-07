@@ -42,14 +42,15 @@ module div_serial # (
    end
 
    wire [DATA_W-1:0]        tmp = remainder<<1 | dividend_reg[DATA_W-counter-1];
+   wire                     cmp = (tmp >= divisor_reg)? 1'b1 : 1'b0;
 
    always @ (posedge clk) begin
       if (start) begin
          quotient <= 0;
          remainder <= 0;
       end else if (en) begin 
-         quotient <= quotient << 1 | ( tmp > divisor_reg);
-         remainder <= tmp > divisor_reg? tmp-divisor_reg: tmp;
+         quotient <= quotient << 1 | cmp;
+         remainder <= cmp? tmp-divisor_reg: tmp;
       end
    end
 
