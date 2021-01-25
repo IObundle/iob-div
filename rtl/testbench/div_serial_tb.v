@@ -39,7 +39,7 @@ module div_serial_tb;
 
         .start(start),
         .done(done),
-
+	.sign(1'b0),
 		.dividend(dividend),
 		.divisor(divisor),
 
