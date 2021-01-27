@@ -21,6 +21,7 @@ module div_subshift
    reg [DATA_W-1:0]     divisor_reg;
    reg                  sign_reg;
    reg [$clog2(DATA_W+2):0] pc;  //program counter
+   wire [DATA_W-1:0]        subtraend = rq[2*DATA_W-2-:DATA_W];
 
    //output quotient and remainder
    assign quotient = rq[DATA_W-1:0];
@@ -29,7 +30,7 @@ module div_subshift
    //
    //PROGRAM
    //
-
+   
    always @(posedge clk) begin
       if(en) begin
          pc <= pc+1'b1;
@@ -49,18 +50,24 @@ module div_subshift
 
 	   DATA_W: begin  //apply sign
               done <= 1'b1;
-              if (sign_reg) begin
-                 rq[DATA_W-1:0] <= -rq[DATA_W-1:0];
-                 rq[2*DATA_W-1 : DATA_W] <= -rq[2*DATA_W-1 : DATA_W];
+              if( subtraend >=  divisor_reg ) begin
+                 if(sign_reg)
+                   rq <= {-(subtraend-divisor_reg), -{rq[DATA_W-2 : 0], 1'b1}};
+                 else
+                   rq <= {subtraend-divisor_reg, rq[DATA_W-2 : 0], 1'b1};
+              end else begin
+                 if(sign_reg)
+                   rq <= -{rq[2*DATA_W-2 : 0], 1'b0};
+                 else
+                   rq <= {rq[2*DATA_W-2 : 0], 1'b0};
               end
-           end              
-	   	
+	   end
+
 	   DATA_W+1: pc <= pc;  //finish
 
-`define DIV_SUB (rq[2*DATA_W-2-:DATA_W] - divisor_reg)
 	   default: begin //shift and subtract
-              if( `DIV_SUB >= {DATA_W{1'b0}})
-                rq <= {`DIV_SUB, rq[DATA_W-2 -: DATA_W-2], 1'b1};
+              if( subtraend >=  divisor_reg )
+                rq <= {subtraend-divisor_reg, rq[DATA_W-2 : 0], 1'b1};
               else 
                 rq <= {rq[2*DATA_W-2 : 0], 1'b0};
            end

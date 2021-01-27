@@ -5,7 +5,7 @@ module div_subshift_tb;
    parameter clk_frequency = `CLK_FREQ;
    parameter clk_period = 1e9/clk_frequency; //ns
    parameter DATA_W = 32;
-   parameter TEST_SZ = 5;
+   parameter TEST_SZ = 100;
 
    reg clk;
    reg en;
@@ -18,7 +18,6 @@ module div_subshift_tb;
    reg [DATA_W-1:0]  quotient [0:TEST_SZ-1];
    reg [DATA_W-1:0]  remainder [0:TEST_SZ-1];
 
-
    //outputs
    wire [DATA_W-1:0]  quotient_out;
    wire [DATA_W-1:0]  remainder_out;
@@ -30,12 +29,14 @@ module div_subshift_tb;
    initial begin
 
 `ifdef VCD
-      $dumpfile("div_serial.vcd");
+      $dumpfile("div.vcd");
       $dumpvars();
 `endif
 
       clk = 1;
       en = 0;
+      sign = 0;
+      
 
       // generate test data
       for (i=0; i < TEST_SZ; i=i+1) begin
@@ -59,10 +60,11 @@ module div_subshift_tb;
    //clock
    always #(clk_period/2) clk = ~clk;   
 
-  div_subshift 
-    # (
-       .DATA_W(DATA_W)
-       )
+   //instantiate divider
+   div_subshift 
+     # (
+        .DATA_W(DATA_W)
+        )
    uut (
 	.clk(clk),
         .en(en),
