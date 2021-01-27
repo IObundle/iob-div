@@ -2,9 +2,10 @@
 FREQ := 100000000
 
 # File paths
-ROOT_DIR := ../..
-RTL_DIR := $(ROOT_DIR)/rtl
-
+ROOT_DIR := ../../..
+HW_DIR := $(ROOT_DIR)/hardware
+SRC_DIR := $(HW_DIR)/src
+TB_DIR := $(HW_DIR)/testbench/
 # Testbench defines
 TB_DEFINE = -DCLK_FREQ=$(FREQ)
 TB_DEFINE += -DVCD
@@ -13,16 +14,16 @@ TB_DEFINE += -DVCD
 VLOG := iverilog -Wall -g2005-sv
 
 # Hardware sources
-SRC_PIPE := $(RTL_DIR)/src/div_slice.v $(RTL_DIR)/src/div_pipe.v $(RTL_DIR)/testbench/div_pipe_tb.v
-SRC_SERIAL := $(RTL_DIR)/src/div_serial.v $(RTL_DIR)/testbench/div_serial_tb.v
+SRC_PIPE := $(SRC_DIR)/div_slice.v $(SRC_DIR)/div_pipe.v $(TB_DIR)/div_pipe_tb.v
+SRC_SERIAL := $(SRC_DIR)/div_subshift.v $(TB_DIR)/div_subshift_tb.v
 
-all: pipediv serialdiv
+all: pipediv subshiftdiv
 
 pipediv: $(SRC_PIPE)
 	$(VLOG) $(TB_DEFINE) -o $@ $(SRC_PIPE)
 	./$@
 
-serialdiv: $(SRC_SERIAL)
+subshiftdiv: $(SRC_SERIAL)
 	$(VLOG) $(TB_DEFINE) -o $@ $(SRC_SERIAL)
 	./$@
 
