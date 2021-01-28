@@ -4,8 +4,8 @@ module div_subshift_tb;
 
    parameter clk_frequency = `CLK_FREQ;
    parameter clk_period = 1e9/clk_frequency; //ns
-   parameter DATA_W = 4;
-   parameter TEST_SZ = 5;
+   parameter DATA_W = 16; //data gen is limited to 31 bits
+   parameter TEST_SZ = 100;
 
    reg clk;
    reg en;
@@ -46,8 +46,8 @@ module div_subshift_tb;
 	 divisor[i] = $random;
 	 quotient[i] = dividend[i] / divisor[i];
 	 remainder[i] = dividend[i] % divisor[i];
-         dividend_s[i] = $random%(DATA_W-1)-2**(DATA_W-2);
-	 divisor_s[i] = $random%(DATA_W-1)-2**(DATA_W-2);
+         dividend_s[i] = $random%(DATA_W)-2**(DATA_W-1);
+	 divisor_s[i] = $random%(DATA_W)-2**(DATA_W-1);
 	 quotient_s[i] = dividend_s[i] / divisor_s[i];
 	 remainder_s[i] = dividend_s[i] % divisor_s[i];         
       end

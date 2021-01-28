@@ -1,18 +1,35 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed Jan 27 17:12:56 2021
+[*] Thu Jan 28 01:05:50 2021
 [*]
-[dumpfile] "(null)"
+[dumpfile] "/home/jsousa/sandbox/iob-soc-asrc/submodules/SAMPRC/submodules/DIV/hardware/simulation/icarus/div.vcd"
+[dumpfile_mtime] "Thu Jan 28 01:05:43 2021"
+[dumpfile_size] 421793
 [savefile] "/home/jsousa/sandbox/iob-soc-asrc/submodules/SAMPRC/submodules/DIV/hardware/simulation/waves.gtkw"
-[timestart] 0
+[timestart] 4282200
 [size] 1918 1050
 [pos] -1 -1
-*-15.639756 203900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.736485 6857900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] div_subshift_tb.
 [sst_width] 324
 [signals_width] 257
 [sst_expanded] 1
 [sst_vpaned_height] 296
+@200
+-TB
+@28
+div_subshift_tb.clk
+div_subshift_tb.done
+div_subshift_tb.en
+@420
+div_subshift_tb.i
+@22
+div_subshift_tb.quotient_out[3:0]
+div_subshift_tb.quotient_s_out[3:0]
+div_subshift_tb.remainder_out[3:0]
+div_subshift_tb.remainder_s_out[3:0]
+@200
+-UNSIGNED
 @28
 div_subshift_tb.uut.clk
 @22
@@ -20,20 +37,40 @@ div_subshift_tb.uut.dividend[3:0]
 div_subshift_tb.uut.divisor[3:0]
 div_subshift_tb.uut.divisor_reg[3:0]
 @28
+div_subshift_tb.uut.done
 div_subshift_tb.uut.en
 @22
 div_subshift_tb.uut.pc[3:0]
-@29
-div_subshift_tb.uut.done
 @28
-div_subshift_tb.uut.rq[7:0]
-@420
-div_subshift_tb.uut.subtraend[3:0]
-@22
 div_subshift_tb.uut.quotient[3:0]
+@22
 div_subshift_tb.uut.remainder[3:0]
+div_subshift_tb.uut.rq[7:0]
 @28
 div_subshift_tb.uut.sign
-div_subshift_tb.uut.sign_reg
+@22
+div_subshift_tb.uut.subtraend[3:0]
+@200
+-SIGNED
+@28
+div_subshift_tb.uut_s.clk
+@420
+div_subshift_tb.uut_s.dividend[3:0]
+div_subshift_tb.uut_s.divisor[3:0]
+div_subshift_tb.uut_s.quotient[3:0]
+@421
+div_subshift_tb.uut_s.remainder[3:0]
+@420
+div_subshift_tb.uut_s.divisor_reg[3:0]
+@28
+div_subshift_tb.uut_s.done
+div_subshift_tb.uut_s.en
+@22
+div_subshift_tb.uut_s.pc[3:0]
+div_subshift_tb.uut_s.rq[7:0]
+@28
+div_subshift_tb.uut_s.sign
+@22
+div_subshift_tb.uut_s.subtraend[3:0]
 [pattern_trace] 1
 [pattern_trace] 0
