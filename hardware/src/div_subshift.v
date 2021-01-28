@@ -18,12 +18,13 @@ module div_subshift
     );
 
    reg [2*DATA_W-1:0]   rq;
-   reg [DATA_W-1:0]     divisor_reg;
+   reg [DATA_W-1:0] 	divisor_reg;
    reg                  divident_sign;
    reg                  divisor_sign;
    reg [$clog2(DATA_W+5):0] pc;  //program counter
-   wire [DATA_W-1:0]        subtraend = rq[2*DATA_W-2-:DATA_W];
-
+   wire [DATA_W-1:0] 	    subtraend = rq[2*DATA_W-2-:DATA_W];
+   reg [DATA_W:0] tmp;
+   
    //output quotient and remainder
    assign quotient = rq[DATA_W-1:0];
    assign remainder = rq[2*DATA_W-1:DATA_W];
@@ -68,8 +69,9 @@ module div_subshift
 	   DATA_W+4: pc <= pc;  //finish
 	   
 	   default: begin //shift and subtract
-              if( subtraend >=  divisor_reg )
-                rq <= {subtraend-divisor_reg, rq[DATA_W-2 : 0], 1'b1};
+	      tmp = {1'b0, subtraend} - {1'b0, divisor_reg};
+              if(~tmp[DATA_W])
+                rq <= {tmp, rq[DATA_W-2 : 0], 1'b1};
               else 
                 rq <= {rq[2*DATA_W-2 : 0], 1'b0};
            end
