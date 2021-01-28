@@ -19,7 +19,8 @@ module div_subshift
 
    reg [2*DATA_W-1:0]   rq;
    reg [DATA_W-1:0]     divisor_reg;
-   reg                  sign_reg;
+   reg                  divident_sign;
+   reg                  divisor_sign;
    reg [$clog2(DATA_W+2):0] pc;  //program counter
    wire [DATA_W-1:0]        subtraend = rq[2*DATA_W-2-:DATA_W];
 
@@ -39,27 +40,29 @@ module div_subshift
 	   0: begin //load operands and result sign
               if(sign) begin
                  divisor_reg <= divisor[DATA_W-1]? -divisor: divisor;
+                 divisor_sign <= divisor[DATA_W-1];
                  rq[DATA_W-1:0] <= dividend[DATA_W-1]? -dividend: dividend;
-                 sign_reg <= dividend[DATA_W-1] ^ divisor[DATA_W-1];
+                 divident_sign <= dividend[DATA_W-1];
               end else begin
                  divisor_reg <= divisor;
+                 divisor_sign <= 1'b0;
                  rq[DATA_W-1:0] <= dividend;
-                 sign_reg <= 1'b0;
+                 divident_sign <= 1'b0;
               end
 	   end
 
 	   DATA_W: begin  //apply sign
               done <= 1'b1;
-              if( subtraend >=  divisor_reg ) begin
-                 if(sign_reg)
-                   rq <= {-(subtraend-divisor_reg), -{rq[DATA_W-2 : 0], 1'b1}};
-                 else
-                   rq <= {subtraend-divisor_reg, rq[DATA_W-2 : 0], 1'b1};
+              if( subtraend >=  divisor_reg )  begin
+                 //quotient
+                 rq[DATA_W-1:0] <= (divident_sign^divisor_sign)? -{rq[DATA_W-2 : 0], 1'b1}: {rq[DATA_W-2 : 0], 1'b1} ;
+                 //remainder
+                 rq[2*DATA_W-1:DATA_W] <= divident_sign? -(subtraend-divisor_reg) : subtraend-divisor_reg;
               end else begin
-                 if(sign_reg)
-                   rq <= -{rq[2*DATA_W-2 : 0], 1'b0};
-                 else
-                   rq <= {rq[2*DATA_W-2 : 0], 1'b0};
+                 //quotient
+                 rq[DATA_W-1:0] <= (divident_sign^divisor_sign)? -{rq[DATA_W-2 : 0], 1'b0}: {rq[DATA_W-2 : 0], 1'b0};
+                 //remainder 
+                 rq[2*DATA_W-1:DATA_W] <= divident_sign? -rq[2*DATA_W-2 -: DATA_W] : rq[2*DATA_W-2 -: DATA_W];
               end
 	   end
 
