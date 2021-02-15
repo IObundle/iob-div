@@ -9,6 +9,9 @@ define_clock -name clk -period 5000 [find / -port clk]
 
 synthesize -to_mapped
 
+insert_tiehilo_cells -verbose
+delete_unloaded_undriven -all *
+
 report gates > gates_report.txt
 report timing > timing_report.txt
 write_hdl -mapped > div_synth.v 
