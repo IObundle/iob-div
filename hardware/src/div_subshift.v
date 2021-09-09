@@ -17,7 +17,7 @@ module div_subshift
     output [DATA_W-1:0] remainder
     );
 
-   reg [2*DATA_W-1:0]   rq;
+   reg [2*DATA_W:0]     rq;
    reg [DATA_W-1:0] 	divisor_reg;
    reg                  divident_sign;
    reg                  divisor_sign;
