@@ -2,7 +2,7 @@
 FREQ := 100000000
 
 # File paths
-ROOT_DIR := ../../..
+ROOT_DIR := ../..
 HW_DIR := $(ROOT_DIR)/hardware
 SRC_DIR := $(HW_DIR)/src
 TB_DIR := $(HW_DIR)/testbench
@@ -16,8 +16,9 @@ VLOG := iverilog -Wall -g2005-sv
 # Hardware sources
 SRC_PIPE := $(SRC_DIR)/div_slice.v $(SRC_DIR)/div_pipe.v $(TB_DIR)/div_pipe_tb.v
 SRC_SERIAL := $(SRC_DIR)/div_subshift.v $(TB_DIR)/div_subshift_tb.v
+SRC_SERIALFRAC := $(SRC_DIR)/div_subshift_frac.v $(TB_DIR)/div_subshift_frac_tb.v
 
-all: pipediv subshiftdiv
+all: pipediv subshiftdiv subshiftdivfrac
 
 pipediv: $(SRC_PIPE)
 	$(VLOG) $(TB_DEFINE) -o $@ $(SRC_PIPE)
@@ -25,6 +26,10 @@ pipediv: $(SRC_PIPE)
 
 subshiftdiv: $(SRC_SERIAL)
 	$(VLOG) $(TB_DEFINE) -o $@ $(SRC_SERIAL)
+	./$@
+
+subshiftdivfrac: $(SRC_SERIALFRAC)
+	$(VLOG) $(TB_DEFINE) -o $@ $(SRC_SERIALFRAC)
 	./$@
 
 waves:
