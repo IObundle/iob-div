@@ -18,7 +18,7 @@ SRC_PIPE := $(SRC_DIR)/div_slice.v $(SRC_DIR)/div_pipe.v $(TB_DIR)/div_pipe_tb.v
 SRC_SERIAL := $(SRC_DIR)/div_subshift.v $(TB_DIR)/div_subshift_tb.v
 SRC_SERIALFRAC := $(SRC_DIR)/div_frac.v $(TB_DIR)/div_frac_tb.v
 
-all: pipediv subshiftdiv
+all: pipediv subshiftdiv subshiftdivfrac
 
 pipediv: $(SRC_PIPE)
 	$(VLOG) $(TB_DEFINE) $(SRC_PIPE)
@@ -31,6 +31,10 @@ subshiftdiv: $(SRC_SERIAL)
 divfrac: $(SRC_SERIALFRAC)
 	$(VLOG) $(TB_DEFINE) $(SRC_SERIALFRAC)
 	./a.out
+
+subshiftdivfrac: $(SRC_SERIALFRAC)
+	$(VLOG) $(TB_DEFINE) -o $@ $(SRC_SERIALFRAC)
+	./$@
 
 waves:
 	gtkwave -a ../waves.gtkw div.vcd &
