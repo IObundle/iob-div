@@ -78,7 +78,7 @@ module div_subshift_frac
      (
       .clk(clk),
       .rst(~done),
-      .ready(ready),
+      .ready(),
       
       .dividend(divisor_reg),
       .divisor(remainder),
