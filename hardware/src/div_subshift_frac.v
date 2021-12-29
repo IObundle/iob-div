@@ -7,7 +7,7 @@ module div_subshift_frac
    (
     input               clk,
     input               rst,
-    input               en,
+    input               start,
     output reg          done,
 
     input [DATA_W-1:0]  dividend,
@@ -38,18 +38,25 @@ module div_subshift_frac
          pc <= 1'b0;
          rq <= 1'b0;
          done <= 1'b0;
-      end else if(en) begin
+      end else begin
          pc <= pc+1'b1;
          
          case (pc)
 	   0: begin //load operands
               divisor_reg <= divisor;
               rq[DATA_W-1:0] <= dividend;
+              if(!start)
+                pc <= pc;
 	   end // case: 0
 
 	   DATA_W+1: begin  //finish 
  	      done <= 1'b1;
-              pc <= pc;
+	   end
+	   
+	   DATA_W+2: begin  //finish 
+ 	      done <= 1'b0;
+              rq <= 1'b0;
+              pc <= 1'b0;
 	   end
 	   
 	   default: begin //shift and subtract
@@ -60,11 +67,6 @@ module div_subshift_frac
                 rq <= {rq[2*DATA_W-2 : 0], 1'b0};
            end
          endcase // case (pc)
-         
-      end else begin // if (en)
-         rq <= 1'b0;
-         done <= 1'b0;
-         pc <= 1'b0;
       end
    end // always @ *
 
