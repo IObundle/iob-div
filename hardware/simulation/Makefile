@@ -5,7 +5,7 @@ FREQ := 100000000
 ROOT_DIR := ../..
 HW_DIR := $(ROOT_DIR)/hardware
 SRC_DIR := $(HW_DIR)/src
-TB_DIR := $(HW_DIR)/testbench
+TB_DIR := $(HW_DIR)/simulation/testbench
 # Testbench defines
 TB_DEFINE = -DCLK_FREQ=$(FREQ)
 TB_DEFINE += -DVCD
