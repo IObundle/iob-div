@@ -15,12 +15,12 @@ module div_subshift_tb;
    //data
    reg [DATA_W-1:0]  dividend [0:TEST_SZ-1];
    reg [DATA_W-1:0]  divisor [0:TEST_SZ-1];
-   reg [DATA_W-1:0]        quotient [0:TEST_SZ-1];
-   reg [DATA_W-1:0]        remainder [0:TEST_SZ-1];
+   reg [DATA_W-1:0]  quotient [0:TEST_SZ-1];
+   reg [DATA_W-1:0]  remainder [0:TEST_SZ-1];
 
    //core outputs
-   wire [DATA_W-1:0]        quotient_out;
-   wire [DATA_W-1:0]        remainder_out;
+   wire [DATA_W-1:0] quotient_out;
+   wire [DATA_W-1:0] remainder_out;
    
    integer           i;
 
@@ -51,8 +51,10 @@ module div_subshift_tb;
          @(posedge clk) #1 start = 0;
 
          //wait for done
-         @(posedge done) #1;
-
+         @(posedge clk) #1;
+         while(!done)
+           @(posedge clk) #1;
+         
          //verify results
          if(quotient_out != quotient[i] || remainder_out != remainder[i])
            $display ("%d / %d = %d with rem %d but got %d with rem %d", dividend[i], divisor[i], quotient[i], remainder[i], quotient_out, remainder_out);

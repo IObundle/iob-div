@@ -4,27 +4,25 @@ module div_subshift_frac_tb;
 
    parameter clk_frequency = `CLK_FREQ;
    parameter clk_period = 1e9/clk_frequency; //ns
-   parameter DATA_W = 56; //data gen is limited to 31 bits
-   parameter TEST_SZ = 11;
-   localparam LEN = 100000;
+   parameter DATA_W = 8;
+   parameter TEST_SZ = 100;
 
-   reg clk;
-   reg en;
+   reg clk = 0;
+   reg rst = 0;
+   reg start = 0;
    wire done;
 
    //data
    reg [DATA_W-1:0]  dividend [0:TEST_SZ-1];
    reg [DATA_W-1:0]  divisor [0:TEST_SZ-1];
-   reg [DATA_W-1:0]        quotient [0:TEST_SZ-1];
-   reg [DATA_W-1:0]        remainder [0:TEST_SZ-1];
+   reg [DATA_W-1:0]  quotient [0:TEST_SZ-1];
+   reg [DATA_W-1:0]  remainder [0:TEST_SZ-1];
 
    //core outputs
    wire [DATA_W-1:0]        quotient_out;
    wire [DATA_W-1:0]        remainder_out;
    
    integer           i;
-   real              qacc = 0;
-   
  
    initial begin
 
@@ -33,36 +31,37 @@ module div_subshift_frac_tb;
       $dumpvars();
 `endif
 
-      clk = 1;
-      en = 0;
-
       // generate test data
       for (i=0; i < TEST_SZ; i=i+1) begin
 //	 dividend[i] = $random;
 //	 divisor[i] = $random;
-	 dividend[i] = 1<<46;
-	 divisor[i] = 1<<22;
+	 dividend[i] = 10;
+	 divisor[i] = 3;
 	 quotient[i] = dividend[i] / divisor[i];
 	 remainder[i] = dividend[i] % divisor[i];
       end
       
+      //reset pulse
+      #100 rst = 1;
+      @(posedge clk) #1 rst = 0;
       
-      //copmpute divisions
+      //compute divisions
       for (i=0; i < TEST_SZ; i=i+1) begin
-         @(posedge clk) #1 en = 1;
-         @(posedge done) #1;
+        //pulse start
+         @(posedge clk) #1 start = 1;
+         @(posedge clk) #1 start = 0;
 
-         qacc = 0;
+         //wait for done
+         while(!done)
+           @(posedge clk) #1;
          
-         repeat(LEN) begin
-            qacc = qacc + quotient_out;
+         //verify results
+         if(quotient_out != quotient[i] || remainder_out != remainder[i])
+           $display ("%d / %d = %d with rem %d but got %d with rem %d", dividend[i], divisor[i], quotient[i], remainder[i], quotient_out, remainder_out);
 
-            @(posedge clk) #1;
-         end
          
-         $display ("%d / %d = %f and got %f", dividend[i], divisor[i], 1.0*dividend[i]/divisor[i] , qacc/LEN);
-
-         @(posedge clk) #1 en=0;
+         #1000;
+         
       end
 
       $finish;
@@ -80,8 +79,10 @@ module div_subshift_frac_tb;
    uut 
      (
       .clk(clk),
-      .en(en),
+      .rst(rst),
+      .start(start),
       .done(done),
+
       .dividend(dividend[i]),
       .divisor(divisor[i]),
       .quotient(quotient_out),
