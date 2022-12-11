@@ -1,14 +1,13 @@
 `timescale 1ns / 1ps
 
-module div_subshift 
+module div_subshift
   # (
      parameter DATA_W = 32
      )
    (
     input               clk,
-    
-    input               en,
-    input               sign,
+    input               rst,
+    input               start,
     output reg          done,
 
     input [DATA_W-1:0]  dividend,
@@ -17,75 +16,60 @@ module div_subshift
     output [DATA_W-1:0] remainder
     );
 
-   localparam BIT_W = $clog2(DATA_W+5);
+   wire [$clog2(DATA_W+2):0] DATA_VALUE = DATA_W[$clog2(DATA_W+2):0];
 
-   wire [BIT_W-1:0] DATA_VALUE = DATA_W[BIT_W-1:0];
+   //dividend/quotient/remainder register
+   reg [2*DATA_W:0]     dqr_reg, dqr_nxt;
+   always @(posedge clk, posedge rst) if(rst) dqr_reg <= 0; else dqr_reg <= dqr_nxt;
 
-   reg [2*DATA_W-1:0]   rq;
-   reg [DATA_W-1:0] 	divisor_reg;
-   reg                  divident_sign;
-   reg                  divisor_sign;
-   reg [BIT_W:0] pc;  //program counter
-   wire [DATA_W-1:0] 	    subtraend = rq[2*DATA_W-2-:DATA_W];
-   reg [DATA_W:0] tmp;
+   //divisor register
+   reg [DATA_W-1:0]     divisor_reg, divisor_nxt;
+   always @(posedge clk, posedge rst) if(rst) divisor_reg <= 0; else divisor_reg <= divisor_nxt;
    
-   //output quotient and remainder
-   assign quotient = rq[DATA_W-1:0];
-   assign remainder = rq[2*DATA_W-1:DATA_W];
+   wire [DATA_W-1:0]    subtraend = dqr_reg[2*DATA_W-2-:DATA_W];
+   reg [DATA_W:0]       tmp;
 
+   //output quotient and remainder
+   assign quotient = dqr_reg[DATA_W-1:0];
+   assign remainder = dqr_reg[2*DATA_W-1:DATA_W];
+   
+                        
    //
    //PROGRAM
    //
-   
-   always @(posedge clk) begin
-      if(en) begin
-         pc <= pc+1'b1;
-         
-         case (pc)
-	   0: begin //load operands and result sign
-              if(sign) begin
-                 divisor_reg <= divisor;
-                 divisor_sign <= divisor[DATA_W-1];
-                 rq[DATA_W-1:0] <= dividend[DATA_W-1]? -dividend: dividend;
-                 divident_sign <= dividend[DATA_W-1];
-              end else begin
-                 divisor_reg <= divisor;
-                 divisor_sign <= 1'b0;
-                 rq[DATA_W-1:0] <= dividend;
-                 divident_sign <= 1'b0;
-              end
-	   end // case: 0
 
-	   1: begin
-	      if(sign)
-                divisor_reg <= divisor_reg[DATA_W-1]? -divisor_reg: divisor_reg;
-	   end
+   reg [$clog2(DATA_W+2):0] pc, pc_nxt;  //program counter
+   always @(posedge clk, posedge rst) if(rst) pc <= 0; else pc <= pc_nxt;
 
-	   DATA_VALUE+2: begin  //apply sign to quotient
-              rq[DATA_W-1:0] <= (divident_sign^divisor_sign)? -rq[DATA_W-1 : 0]: rq[DATA_W-1 : 0]; // First is -1, second is -2.
-	   end
-	   
-	   DATA_VALUE+3: begin  //apply sign to remainder
-	      done <= 1'b1;
-	      rq[2*DATA_W-1:DATA_W] <= divident_sign? -rq[2*DATA_W-1 -: DATA_W] : rq[2*DATA_W-1 -: DATA_W];
-	   end
-
-	   DATA_VALUE+4: pc <= pc;  //finish
-	   
-	   default: begin //shift and subtract
-	      tmp = {1'b0, subtraend} - {1'b0, divisor_reg};
-              if(~tmp[DATA_W])
-                rq <= {tmp[DATA_W-1 : 0], rq[DATA_W-2 : 0], 1'b1};
-              else 
-                rq <= {rq[2*DATA_W-2 : 0], 1'b0};
-           end
-         endcase // case (pc)
-         
-      end else begin // if (en)
-         rq <= 0;
-         done <= 1'b0;
-         pc <= 0;
+   always @* begin
+      pc_nxt = pc+1;
+      dqr_nxt = dqr_reg;
+      divisor_nxt = divisor;
+      done = 1'b1;
+      
+      case (pc)
+   0: begin //wait for start, load operands and do it
+           if(!start) begin
+              pc_nxt = pc;
+           end else begin
+              divisor_nxt = divisor;
+              dqr_nxt = {{(DATA_W+1){1'b0}}, dividend};
       end
-   end // always @ *
-
+        end
+   
+        DATA_VALUE+1: begin
+           pc_nxt = 0;
+        end
+   
+        default: begin //shift and subtract
+           done = 1'b0;
+      tmp = {1'b0, subtraend} - {1'b0, divisor_reg};
+           if(~tmp[DATA_W])
+             dqr_nxt = {tmp, dqr_reg[DATA_W-2 : 0], 1'b1};
+           else 
+             dqr_nxt = {1'b0,dqr_reg[2*DATA_W-2 : 0], 1'b0};
+        end
+      endcase // case (pc)
+   end
+   
 endmodule
