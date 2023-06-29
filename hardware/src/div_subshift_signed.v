@@ -1,12 +1,10 @@
 `timescale 1ns / 1ps
 
-module div_subshift 
-  # (
+module div_subshift #(
      parameter DATA_W = 32
      )
    (
     input               clk,
-    
     input               en,
     input               sign,
     output reg          done,
@@ -17,11 +15,13 @@ module div_subshift
     output [DATA_W-1:0] remainder
     );
 
+   localparam PC_W = $clog2(DATA_W+5)+1;
+
    reg [2*DATA_W:0]     rq;
    reg [DATA_W-1:0] 	divisor_reg;
    reg                  divident_sign;
    reg                  divisor_sign;
-   reg [$clog2(DATA_W+5):0] pc;  //program counter
+   reg [PC_W-1:0]       pc;  //program counter
    wire [DATA_W-1:0] 	    subtraend = rq[2*DATA_W-2-:DATA_W];
    reg [DATA_W:0] tmp;
    
@@ -57,30 +57,30 @@ module div_subshift
                 divisor_reg <= divisor_reg[DATA_W-1]? -divisor_reg: divisor_reg;
 	   end
 
-	   DATA_W+2: begin  //apply sign to quotient
-              rq[DATA_W-1:0] <= (divident_sign^divisor_sign)? -rq[DATA_W-2 : 0]: rq[DATA_W-2 : 0];
+	   PC_W'(DATA_W+2): begin  //apply sign to quotient
+              rq[DATA_W-1:0] <= (divident_sign^divisor_sign)? -{rq[DATA_W-2], rq[DATA_W-2 : 0]}: {rq[DATA_W-2], rq[DATA_W-2 : 0]};
 	   end
 	   
-	   DATA_W+3: begin  //apply sign to remainder
+	   PC_W'(DATA_W+3): begin  //apply sign to remainder
 	      done <= 1'b1;
 	      rq[2*DATA_W-1:DATA_W] <= divident_sign? -rq[2*DATA_W-1 -: DATA_W] : rq[2*DATA_W-1 -: DATA_W];
 	   end
 
-	   DATA_W+4: pc <= pc;  //finish
+	   PC_W'(DATA_W+4): pc <= pc;  //finish
 	   
 	   default: begin //shift and subtract
 	      tmp = {1'b0, subtraend} - {1'b0, divisor_reg};
               if(~tmp[DATA_W])
                 rq <= {tmp, rq[DATA_W-2 : 0], 1'b1};
               else 
-                rq <= {rq[2*DATA_W-2 : 0], 1'b0};
+                rq <= {rq[2*DATA_W-1 : 0], 1'b0};
            end
          endcase // case (pc)
          
       end else begin // if (en)
-         rq <= 1'b0;
+         rq <= 0;
          done <= 1'b0;
-         pc <= 1'b0;
+         pc <= 0;
       end
    end // always @ *
 
