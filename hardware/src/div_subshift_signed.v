@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module div_subshift 
+module div_subshift_signed 
   # (
      parameter DATA_W = 32
      )
